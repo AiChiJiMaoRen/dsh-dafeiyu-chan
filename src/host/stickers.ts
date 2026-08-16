@@ -9,7 +9,7 @@
  * pickSticker() picks one sticker by mood — pure local matching, ZERO tokens.
  *
  * Directory conventions (user-owned, documented in README):
- *   C:\Users\linha\Pictures\大肥鱼\
+ *   ~/Pictures/大肥鱼/
  *     ├── 委屈-你这吃白饭的蓝色大肥鱼.jpg   ← mood-内容文字
  *     ├── 开心.jpg                           ← mood only
  *     └── ...（mood = 文件名第一个「-」前的词，或整个文件名）

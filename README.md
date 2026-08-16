@@ -50,7 +50,7 @@ DeepSeek Harness 里的情绪价值陪伴看板娘：左侧栏最底部一条「
 node <dsh-harness>/node_modules/typescript/lib/tsc.js -p tsconfig.host.json
 
 # 2. 注入（dev_inject_plugin 本目录）——junction + loader.create，免重启
-dev_inject_plugin C:\Users\linha\Documents\助手\dsh-dafeiyu
+dev_inject_plugin <本插件目录>
 ```
 
 `lib/client.js` 为手写无依赖 DOM 模块（无需 tsdown），走 `dsh.client` 注入。

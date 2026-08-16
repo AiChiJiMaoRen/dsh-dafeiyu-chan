@@ -141,7 +141,7 @@ dsh 侧栏 shell **没有对外暴露可注册的 slot**，所以参照 `dsh-ssh
 
 ## 5.5 当前实现状态（已验证）
 - ✅ host `/api/dsh-dafeiyu/*` 三接口（bootstrap / chat / bubble）在本机跑通
-- ✅ `workspaceRegistry` 读当前工作区（实测返回 `C:\Users\linha\Documents\助手`）
+- ✅ `workspaceRegistry` 读当前工作区（实测返回当前会话工作目录）
 - ✅ 记忆 `~/.dsh/whale-memory.json` 持久化 + 心情推断（`累`→blah）+ 固定称呼 `杂鱼`
 - ✅ rule 离线回复网关（人设腔调）实机可响应
 - ✅ `llm` 通道已实测通过：`replyChannel: 'llm'` 下用本机 `agentDefaultModel`（`opencode-go` / `deepseek-v4-flash`）跑出完整鲸鱼娘人设回复（emo 安慰、整理 README、被吐槽回嘴三场景均保持人设）；心情推断与固定记忆同步生效
