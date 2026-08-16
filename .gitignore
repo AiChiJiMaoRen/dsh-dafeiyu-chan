@@ -1,0 +1,14 @@
+node_modules/
+lib/
+*.tsbuildinfo
+*.tgz
+
+# 内部文档（含本机路径/会话信息，不上传）
+docs/HANDOFF.md
+docs/UI-HANDOFF.md
+
+# 本地配置/素材
+.env
+.env.*
+stickers/
+!stickers/.gitkeep

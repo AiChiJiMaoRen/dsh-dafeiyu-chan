@@ -1,0 +1,6 @@
+# dsh-dafeiyu bundle patch: 在 profile 根上插入大肥鱼宿主侧插件行。
+# 浏览器侧（exports "./client"）由同包 dsh.client 声明提供。
+- insert:
+    - id: dsh-dafeiyu
+      name: '@dsh-external/dsh-dafeiyu'
+      config: {}
