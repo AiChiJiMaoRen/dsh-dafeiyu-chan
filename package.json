@@ -1,5 +1,5 @@
 {
-  "name": "@dsh-external/dsh-dafeiyu",
+  "name": "@dsh-external/dsh-dafeiyu-chan",
   "version": "0.0.1",
   "description": "大肥鱼（鲸鱼娘）dsh 情绪价值陪伴看板娘：左侧栏最底部「大肥鱼」鱼标 + dsh 风聊天对话框，俏皮护短人设，记住你的心情（固定称呼「杂鱼」）。",
   "type": "module",

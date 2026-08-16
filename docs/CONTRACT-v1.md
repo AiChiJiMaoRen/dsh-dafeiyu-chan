@@ -1,6 +1,6 @@
 # dsh-dafeiyu · 记忆 + 点子功能 接口契约 v1
 
-> 供两个并行子 agent 实现时共同遵守的唯一契约。宿主版本（已注入）：`@dsh-external/dsh-dafeiyu`。
+> 供两个并行子 agent 实现时共同遵守的唯一契约。宿主版本（已注入）：`@dsh-external/dsh-dafeiyu-chan`。
 > 源码在本插件目录，host 用 TypeScript 编译到 `lib/`，client 用 tsdown 打包。
 
 ## 总则
@@ -80,4 +80,4 @@ interface IdeasReply {
 ## 构建
 - host：`node <dsh-harness>/node_modules/typescript/lib/tsc.js -p tsconfig.host.json`
 - client：`node <tsdown-global>/dist/run.mjs`（全局 npm 包 tsdown 的入口）
-- 注入：`dev_reload_package @dsh-external/dsh-dafeiyu`
+- 注入：`dev_reload_package @dsh-external/dsh-dafeiyu-chan`

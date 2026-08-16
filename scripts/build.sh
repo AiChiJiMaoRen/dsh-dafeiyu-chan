@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dsh-dafeiyu — host build.
+# dsh-dafeiyu-chan — host build.
 # Strategy (from the dsh-plugins build research): the machine has no full dsh
 # source checkout (only harness CLI + a bare packages/core), so instead of the
 # scaffold's checkout-linked build.sh we junction this plugin's

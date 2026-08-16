@@ -1,9 +1,9 @@
 /**
- * @dsh-external/dsh-dafeiyu — core wire vocabulary shared by the host data
+ * @dsh-external/dsh-dafeiyu-chan — core wire vocabulary shared by the host data
  * services and the browser client: the request/response shapes of the
  * `/api/dsh-dafeiyu/*` routes and the stable envelope the chat panel uses.
  * Pure types — no runtime code.
- * @module dsh-dafeiyu/core/types
+ * @module dsh-dafeiyu-chan/core/types
  */
 
 /** Envelope every /api/dsh-dafeiyu JSON response carries. */

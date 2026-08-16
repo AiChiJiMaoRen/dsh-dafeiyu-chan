@@ -1,4 +1,4 @@
-# 🐋 dsh-dafeiyu · 大肥鱼（鲸鱼娘）
+# 🐋 dsh-dafeiyu-chan · 大肥鱼（鲸鱼娘）
 
 DeepSeek Harness 里的情绪价值陪伴看板娘：左侧栏最底部一条「大肥鱼」鱼标，点击展开一个 **dsh 风的聊天对话框**，以大肥鱼（鲸鱼娘）人设陪你唠嗑——俏皮、有骨头、护短，固定称呼你为「杂鱼」。
 
@@ -71,7 +71,7 @@ src/
 ├── core/persona.ts    # 大肥鱼人设（system prompt + 开场白）
 ├── host/memory.ts     # 固定记忆 ~/.dsh/whale-memory.json
 ├── host/service.ts    # 业务服务 + LLM 回复网关（fallback rule）
-├── host/routes.ts     # /api/dsh-dafeiyu/* 路由
+├── host/routes.ts     # /api/dsh-dafeiyu/* 路由（API 路径不变）
 └── index.ts           # host apply（webServer/systemPrompt 装配）
 lib/client.js          # 手写无依赖 DOM 客户端（鱼标 + 对话框）
 ```

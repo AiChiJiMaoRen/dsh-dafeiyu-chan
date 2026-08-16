@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-dafeiyu — host half: the 大肥鱼 data service, the
+ * @dsh-external/dsh-dafeiyu-chan — host half: the 大肥鱼 data service, the
  * /api/dsh-dafeiyu/* HTTP routes on the shared webserver, and a system-prompt
  * announcement so agents know the whale companion exists. The browser half
  * (exports "./client") is served by client-modules from the same package's
@@ -8,7 +8,7 @@
  * Reply channel: the MVP ships with the rule-based offline gateway (zero extra
  * wiring); an optional `llm` channel uses `ctx.llm.stream(...)` with the 大肥鱼
  * persona for richer replies. Default follows the finalized MVP scope.
- * @module @dsh-external/dsh-dafeiyu
+ * @module @dsh-external/dsh-dafeiyu-chan
  */
 
 import type { Context } from '@deepseek-ai/cordis'
@@ -22,7 +22,7 @@ import { createIdeasService } from './host/ideas.ts'
 import { createSessionTipService } from './host/session-tip.ts'
 import { makeRoutes } from './host/routes.ts'
 
-export const name = '@dsh-external/dsh-dafeiyu'
+export const name = '@dsh-external/dsh-dafeiyu-chan'
 export const inject = ['webServer', 'workspaceRegistry', 'systemPrompt', 'llm', 'agentDefaultModel', 'sessionQuery']
 
 /** Plugin config, validated by the same-named schemastery schema. */
@@ -45,7 +45,7 @@ export const Config = z.object({
 const SECTION_ORDER = 999
 
 /** Model-facing announcement: the whale companion is present and how to use it. */
-export const DAFEIYU_GUIDANCE = '本机已安装 dsh-dafeiyu 插件（大肥鱼·鲸鱼娘陪伴看板娘）：左侧栏最底部的一条「大肥鱼」鱼标，点击展开一个 dsh 风的聊天对话框。她会以鲸鱼娘人设陪你唠嗑（俏皮、有骨头、护短，称呼你为「杂鱼」），能接住你当前工作会话的上下文做简单的代码/文件/整理类小活，并通过 ~/.dsh/whale-memory.json 记住你的心情与关注点（固定称呼，不跟项目绑）。你提到「大肥鱼 / 鲸鱼娘 / 陪聊 / 看板娘」时即指本插件，可让它在对话里协助。'
+export const DAFEIYU_GUIDANCE = '本机已安装 dsh-dafeiyu-chan 插件（大肥鱼·鲸鱼娘陪伴看板娘）：左侧栏最底部的一条「大肥鱼」鱼标，点击展开一个 dsh 风的聊天对话框。她会以鲸鱼娘人设陪你唠嗑（俏皮、有骨头、护短，称呼你为「杂鱼」），能接住你当前工作会话的上下文做简单的代码/文件/整理类小活，并通过 ~/.dsh/whale-memory.json 记住你的心情与关注点（固定称呼，不跟项目绑）。你提到「大肥鱼 / 鲸鱼娘 / 陪聊 / 看板娘」时即指本插件，可让它在对话里协助。'
 
 /**
  * Mount the 大肥鱼 data service, routes, and announcement.
@@ -70,7 +70,7 @@ export function apply(ctx: Context, config?: Config): void {
     if (disposeSection !== undefined) { disposeSection(); disposeSection = undefined }
     if (config?.enabled === false) return
     disposeSection = ctx.systemPrompt.section({
-      name: 'plugin:dsh-dafeiyu',
+      name: 'plugin:dsh-dafeiyu-chan',
       order: SECTION_ORDER,
       text: DAFEIYU_GUIDANCE,
     })
@@ -79,7 +79,7 @@ export function apply(ctx: Context, config?: Config): void {
         const disposers = routes.map((route) => ctx.webServer.register(route))
         return () => { for (const dispose of disposers) dispose() }
       },
-      'dsh-dafeiyu: routes',
+      'dsh-dafeiyu-chan: routes',
     )
   }
 

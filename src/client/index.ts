@@ -338,14 +338,14 @@ export function apply(ctx: ClientContext): void {
   const state: UiState = { open: false, greeted: false, persistent: false, loading: false }
   ctx.effect?.(() => {
     try { return buildUi(state).dispose } catch (error) { console.warn('[dsh-dafeiyu] ui mount failed:', error); return undefined }
-  }, '@dsh-external/dsh-dafeiyu: mount')
+  }, '@dsh-external/dsh-dafeiyu-chan: mount')
   ctx.effect?.(() => {
     try {
       return ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
-        name: 'sidebar.footer.action', id: '@dsh-external/dsh-dafeiyu-sidebar', label: () => '大肥鱼', component: () => ({ render() { return null } }),
+        name: 'sidebar.footer.action', id: '@dsh-external/dsh-dafeiyu-chan-sidebar', label: () => '大肥鱼', component: () => ({ render() { return null } }),
       }))
     } catch (error) { console.warn('[dsh-dafeiyu] slot register failed:', error); return undefined }
-  }, '@dsh-external/dsh-dafeiyu: slot')
+  }, '@dsh-external/dsh-dafeiyu-chan: slot')
 }
 
 export type { ClientContext }
