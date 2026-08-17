@@ -1,7 +1,10 @@
 node_modules/
-lib/
 *.tsbuildinfo
 *.tgz
+
+# lib/ 是构建产物，但 dsh bundle 插件分发需要它（main 指向 lib/index.js），
+# 所以提交进仓库，方便用户从 GitHub 直接安装。
+!lib/
 
 # 内部文档（含本机路径/会话信息，不上传）
 docs/HANDOFF.md
