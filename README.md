@@ -32,25 +32,42 @@ DeepSeek Harness 里的情绪价值陪伴看板娘：左侧栏最底部一条「
 
 ### 表情库规则（重要）
 
-表情从本地目录读取：**`~/.dsh/dafeiyu-stickers/`**（放图片进去即自动入库，无需重启）。
+表情从本地目录读取：**`~/Pictures/大肥鱼/`**（放图片进去即自动入库，无需重启）。
 
-**命名规则（决定情绪分类）**：
+**命名规则**：`表情-内容文字.jpg` 或 `表情.jpg`（表情词在前，`-` 后是图上的梗/内容，帮助模型理解）：
 ```
-开心_xxx.png   难过_xxx.png   生气_xxx.png
-无语_xxx.png   加油_xxx.png   通用_xxx.png
+委屈-你这吃白饭的蓝色大肥鱼.jpg
+开心.jpg
+生气-气死我了.jpg
 ```
-文件名前缀 = 情绪，后缀随便。没有前缀的图默认归「通用」。每次大肥鱼回复时按对话情绪从库里挑一张（纯本地匹配，零 token）。
 
-**未来**：想开源分享表情库？把表情图放到一个 GitHub 仓库（建议也按上述命名规则组织），用户 clone 到 `~/.dsh/dafeiyu-stickers/` 即可用；也可考虑在插件里加「从 GitHub 拉取表情库」的更新器。
+**选图机制**：每次大肥鱼回复时，把表情库文件名列表给 LLM，它**看文件名（含内容文字）选一张最贴合语气**的图随回复展示（零额外 token）；没选到就随机兜底一张。表情图限制 148px、降饱和，不刺眼。
 
-## 安装 / 注入
+**未来**：想开源分享表情库？按上述命名规则建一个 GitHub 仓库，把图放进去即可。
+
+## 安装
 
 ```bash
-# 1. 构建 host（junction 到 harness CLI 类型源 + harness tsc）
-node <dsh-harness>/node_modules/typescript/lib/tsc.js -p tsconfig.host.json
+# 方式1：从 GitHub 安装（推荐）
+dsh plugin --profile web add https://github.com/AiChiJiMaoRen/dsh-dafeiyu-chan
 
-# 2. 注入（dev_inject_plugin 本目录）——junction + loader.create，免重启
-dev_inject_plugin <本插件目录>
+# 方式2：本地目录安装
+dsh plugin --profile web add <本插件目录>
+```
+
+装完**重启 dsh**，左侧栏底部出现「大肥鱼」鱼标，点击展开对话框。
+
+### 依赖
+- dsh Web GUI（运行在 http://127.0.0.1:3080）
+- 一个可用的 LLM 模型（大肥鱼跟随 dsh 的「默认模型」设置，`agentDefaultModel`）
+
+### 开发者构建（改 host/client 后）
+
+```bash
+# host 编译
+node <dsh-harness>/node_modules/typescript/lib/tsc.js -p tsconfig.host.json
+# client 打包（需全局 tsdown）
+node <tsdown-global>/dist/run.mjs
 ```
 
 `lib/client.js` 为手写无依赖 DOM 模块（无需 tsdown），走 `dsh.client` 注入。
