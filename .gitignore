@@ -15,3 +15,16 @@ docs/UI-HANDOFF.md
 .env.*
 stickers/
 !stickers/.gitkeep
+
+# 桌宠素材处理中间产物（根目录散落帧 / 参考图 / 缓存，可再生产，不入库）
+/ice-*.png
+/idle-*.png
+/ice_source_frame.png
+/ice-contact.png
+/ice-tail.png
+/jump-test.webp
+/life.json
+/output/
+scripts/__pycache__/
+__pycache__/
+*.pyc

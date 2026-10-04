@@ -13,11 +13,11 @@ import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-llm'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-workspace'
-import type { ChatBootstrap, ChatReply, ReplySticker, WhaleMemory } from '../core/types.ts'
-import { WHALE_SYSTEM_PROMPT } from '../core/persona.ts'
+import type { ChatBootstrap, ChatReply, WhaleMemory } from '../core/types.ts'
+import { WHALE_FAKE_THOUGHT_PROMPT, WHALE_SYSTEM_PROMPT } from '../core/persona.ts'
 import { loadMemory, saveMemory } from './memory.ts'
 import { GREETING_RECENT, applySummary, summarizeTurn } from './memory-log.ts'
-import { avoidRecentStickers, buildStickerCatalog, filterStickersForTone, listStickers, moodOf, pickStickerForTone, recentStickerList, rememberSticker, type Tone } from './stickers.ts'
+import { type Tone } from './stickers.ts'
 
 /** Route family dependencies. */
 export interface DafeiyuServiceDeps {
@@ -28,15 +28,15 @@ export interface DafeiyuServiceDeps {
 /** The runtime shape the route handlers bind to. */
 export interface DafeiyuService {
   bootstrap(): Promise<ChatBootstrap>
+  memory(): Promise<WhaleMemory>
   chat(text: string): Promise<ChatReply>
   bubble(): Promise<{ text: string } | null>
 }
 
-/** One gateway reply: the text plus an optional LLM-chosen sticker filename. */
+/** One gateway reply. Sticker selection is intentionally paused. */
 export interface GatewayReply {
   text: string
-  /** Sticker filename chosen by the LLM (optional; caller falls back when absent). */
-  stickerFile?: string
+  thought?: string
 }
 
 /** Functions the chat route calls to produce a reply — swappable by channel. */
@@ -133,8 +133,8 @@ export function createLlmReplyGateway(ctx: Context): ReplyGateway {
   const llm = (ctx as unknown as { llm?: { stream(o: unknown): AsyncIterable<unknown> } }).llm
   const agentDefault = (ctx as unknown as { agentDefaultModel?: { currentSelection(): { provider?: string; model?: string } } }).agentDefaultModel
 
-  /** Resolve provider/model, streaming one persona reply; null when unavailable/empty. */
-  async function callLlm(userText: string): Promise<string | null> {
+  /** Resolve provider/model and stream one constrained prompt; null when unavailable/empty. */
+  async function callLlmPrompt(system: string, userText: string, maxTokens: number): Promise<string | null> {
     if (!llm) return null
     let provider: string | undefined
     let model: string | undefined
@@ -164,10 +164,10 @@ export function createLlmReplyGateway(ctx: Context): ReplyGateway {
       const stream = llm.stream({
         provider,
         model,
-        system: WHALE_SYSTEM_PROMPT,
+        system,
         messages: [{ role: 'user', content: [{ type: 'text', text: userText }] }],
         temperature: 0.9,
-        maxTokens: 260,
+        maxTokens,
       })
       let reply = ''
       for await (const chunk of stream) {
@@ -184,24 +184,35 @@ export function createLlmReplyGateway(ctx: Context): ReplyGateway {
     }
   }
 
+  async function callLlm(userText: string): Promise<string | null> {
+    return callLlmPrompt(WHALE_SYSTEM_PROMPT, userText, 260)
+  }
+
+  function sanitizeThought(value: string | null, userText: string): string | null {
+    if (!value) return null
+    const cleaned = value
+      .replace(/[\r\n]+/g, ' ')
+      .replace(/^\s*[-*•·`"“”「」]+\s*/, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (cleaned.length < 4 || cleaned.length > 40) return null
+    if (/^(我|本鱼|俺|咱|又在|又把)/.test(cleaned)) return null
+    if (/首先|其次|然后|因为|所以|分析|推理|步骤|总结|计划|工具调用|系统提示|chain[- ]of[- ]thought|让我思考|我来分析/i.test(cleaned)) return null
+    const adultContext = /R18|18禁|成人|色情|涩涩|肉文|荤段子|黄色|H文|H模式/i.test(userText)
+    if (/R18|18禁|成人|色情|涩涩|肉文|荤段子|黄色|H模式/i.test(cleaned) && !adultContext) return null
+    return cleaned
+  }
+
+  async function callFakeThought(userText: string, answer: string): Promise<string | null> {
+    const prompt = `用户说：${userText}\n\n大肥鱼准备说的正文：${answer}\n\n只输出一条符合规则的伪思考台词。`
+    return sanitizeThought(await callLlmPrompt(WHALE_FAKE_THOUGHT_PROMPT, prompt, 64), userText)
+  }
+
   return {
     async reply({ text, memory, workspace, stickers, tone }) {
-      const t = tone ?? 'neutral'
-      // 语境候选裁剪：tease 只留态度池（认怂图直接出局，LLM 根本看不到）；
-      // emo 剔除认怂/嘴硬图。候选为空时退回全量（图库缺图不饿死选图）。
-      // 再剔除最近用过的表情（防连发同一张；只剩 1 张候选时保留）。
-      const candidates = avoidRecentStickers(filterStickersForTone(stickers, t))
-      // 表情库结构化目录 + 态度策略随 prompt 给模型：模型看情绪分组与画面内容
-      // （含认怂标记）理解每张图，按「大肥鱼自己的态度」选一张最贴合的，
-      // 在回复末尾附带 `[sticker:文件名]`。
-      const stickerHint = stickers.length > 0
-        ? `\n\n【表情库】你这次可选的表情贴纸（文件名即「情绪词-画面内容」）：\n${buildStickerCatalog(candidates)}\n\n${STICKER_POLICY}\n\n用户这句话的语气：${TONE_LABELS[t]}。选图倾向：${TONE_PREFERENCES[t]}。`
-        : ''
-      const out = await callLlm(text + stickerHint)
-      if (out !== null) {
-        const parsed = extractStickerMarker(out, candidates)
-        return { text: parsed.text, stickerFile: parsed.file }
-      }
+      // 表情包暂停期间只生成用户可见的正文，不向模型发送图库或选图指令。
+      const out = await callLlm(text)
+      if (out !== null) return { text: out, thought: await callFakeThought(text, out) ?? undefined }
       return RULE_REPLY_GATEWAY.reply({ text, memory, workspace, stickers, tone })
     },
     async greeting({ memory, workspace }) {
@@ -219,20 +230,6 @@ export function createLlmReplyGateway(ctx: Context): ReplyGateway {
 }
 
 /**
- * Extract a `[sticker:文件名]` marker from the LLM reply tail, verify the file
- * actually exists in the library, strip the marker from the visible text.
- * @returns clean text + matched filename (or undefined).
- */
-function extractStickerMarker(reply: string, stickers: string[]): { text: string; file?: string } {
-  const match = /\[sticker:([^\]]+)\]\s*$/.exec(reply)
-  if (!match) return { text: reply.trim() }
-  const file = match[1].trim()
-  const text = reply.slice(0, match.index).trim()
-  if (stickers.includes(file)) return { text, file }
-  return { text }
-}
-
-/**
  * Create the service the routes bind to.
  * @param ctx - context carrying workspaceRegistry.
  * @param gateway - reply generator (inject the chosen channel).
@@ -243,36 +240,18 @@ export function createDafeiyuService(ctx: Context, gateway: ReplyGateway = RULE_
   const currentWorkspace = workspaceRegistry?.list()?.[0]?.path ?? null
 
   return {
-    /** The full bootstrap the panel shows on open. Greeting is generated fresh each open. */
+    async memory(): Promise<WhaleMemory> {
+      return loadMemory()
+    },
+    /** Greeting payload retained for the sidebar entry bubble. */
     async bootstrap(): Promise<ChatBootstrap> {
       const memory = await loadMemory()
       const greeting = await gateway.greeting({ memory, workspace: currentWorkspace })
-      // 开场白也带一张表情：走「开心/元气/满足/娇羞/呆萌」欢快池（零 token），
-      // 排除最近用过的防连发——不能用 pickSticker(mood)：mood 为 up 时「开心」池
-      // 只有 1 张，笑脸会变成固定答案。
-      let sticker: ReplySticker | undefined
-      try {
-        const picked = await pickStickerForTone('happy', memory.mood, undefined, recentStickerList())
-        if (picked !== null) {
-          sticker = { file: picked.file, mood: picked.mood }
-          rememberSticker(picked.file)
-        }
-      } catch {
-        /* 无表情库则不带 */
-      }
-      // 全量表情文件名：client 打开面板时预加载，随机挑到哪张都是已缓存的。
-      let stickers: string[] = []
-      try {
-        stickers = (await listStickers()).map((s) => s.file)
-      } catch {
-        stickers = []
-      }
       return {
         greeting,
         memory,
         workspace: currentWorkspace,
-        sticker,
-        stickers,
+        stickers: [],
       }
     },
 
@@ -282,14 +261,7 @@ export function createDafeiyuService(ctx: Context, gateway: ReplyGateway = RULE_
       memory.lastSeenAt = Date.now()
       memory.interactionCount += 1
       memory.mood = inferMood(memory.mood, text)
-      // 表情库文件名列表（给 LLM 选表情用；空则无表情）。
-      let stickerFiles: string[] = []
-      try {
-        stickerFiles = (await listStickers()).map((s) => s.file)
-      } catch {
-        stickerFiles = []
-      }
-      const gated = await gateway.reply({ text, memory, workspace: currentWorkspace, stickers: stickerFiles, tone: inferTone(text) })
+      const gated = await gateway.reply({ text, memory, workspace: currentWorkspace, stickers: [], tone: inferTone(text) })
       // 记忆层 1：把「用户消息 + 回复」凝练成 0~2 条进展/待办摘要，并顺手更新 currentFocus。
       // summarizeTurn 保证 never-throw；若 LLM 不可用/失败会自动返回空摘要，不影响主回复。
       try {
@@ -299,21 +271,7 @@ export function createDafeiyuService(ctx: Context, gateway: ReplyGateway = RULE_
         /* 摘要失败也照常保存本条基础的回复字段 */
       }
       await saveMemory(memory)
-      // 表情：优先用 LLM 选的（候选已剔除最近用过的）；没选/选了无效文件则按
-      // 「语境池」随机兜底（排除认怂图 + 最近用过的，保证每次回复都有图且不连发）。
-      let sticker: ReplySticker | undefined
-      try {
-        const chosen = gated.stickerFile && stickerFiles.includes(gated.stickerFile)
-          ? gated.stickerFile
-          : (await pickStickerForTone(inferTone(text), memory.mood, undefined, recentStickerList()))?.file
-        if (chosen) {
-          sticker = { file: chosen, mood: moodOf(chosen) }
-          rememberSticker(chosen)
-        }
-      } catch {
-        /* 表情缺失/目录不存在 → 不带表情，不影响回复 */
-      }
-      return { text: gated.text, memory, sticker }
+      return { text: gated.text, thought: gated.thought, memory }
     },
 
     /** Null unless a proactive bubble is due (deny-rate limited). */

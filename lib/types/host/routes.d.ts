@@ -9,6 +9,7 @@ import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';
 import type { DafeiyuService } from './service.ts';
 import { type IdeasService } from './ideas.ts';
 import { type SessionTipService } from './session-tip.ts';
+import { type DeskpetService } from './deskpet.ts';
 export type { ReplyGateway } from './service.ts';
 /** Path prefix for every dafeiyu route. */
 export declare const API_PREFIX = "/api/dsh-dafeiyu";
@@ -24,9 +25,13 @@ export interface DafeiyuIdeasDeps {
 export interface DafeiyuSessionTipDeps {
     sessionTipService: SessionTipService;
 }
+/** Deps for the `/deskpet` routes. */
+export interface DafeiyuDeskpetDeps {
+    deskpet: DeskpetService;
+}
 /**
  * Build every /api/dsh-dafeiyu route.
  * @param deps - the services created in apply.
  * @returns the exact routes.
  */
-export declare function makeRoutes(deps: DafeiyuRoutesDeps & DafeiyuIdeasDeps & DafeiyuSessionTipDeps): WebRoute[];
+export declare function makeRoutes(deps: DafeiyuRoutesDeps & DafeiyuIdeasDeps & DafeiyuSessionTipDeps & DafeiyuDeskpetDeps): WebRoute[];

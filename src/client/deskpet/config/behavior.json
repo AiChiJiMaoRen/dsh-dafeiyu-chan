@@ -1,0 +1,12 @@
+{
+  "geometry": { "petWidth": 48, "petHeight": 48, "worldPadding": 4, "topShakePx": 2 },
+  "bubble": { "minWidth": 180, "maxWidth": 360, "viewportPadding": 32 },
+  "physics": { "gravity": 2200, "maxVelocity": 900, "frameDeltaMax": 0.05 },
+  "interaction": { "dragThreshold": 6, "doubleClickWindow": 250, "topMessageCooldown": 900 },
+  "timing": { "bubbleMinDelay": 45000, "bubbleMaxDelay": 90000, "bubbleVisible": 4200, "bubbleCooldown": 60000, "sleepAfterIdle": 180000, "pokeDuration": 500, "landingSit": 600, "landingCry": 800, "landingStand": 300, "runDuration": 1400, "runReturnDelay": 2000, "transitionFade": 60, "perfMinDelay": 5000, "perfMaxDelay": 11000, "wanderDuration": 900 },
+  "weights": { "eatRun": 50, "slack": 25, "rewrite": 25, "pokeVariant": 20, "nightBubble": 2.5, "qianwenIdle": 0.3 },
+  "clips": { "targetCharPx": 60, "weight": 70, "feetFromBottomPx": 8, "fadeMs": 180 },
+  "display": { "zIndex": 1200, "bubbleZIndex": 1201 },
+  "environment": { "composerSelector": "[data-composer-card]", "composerInputSelector": "[data-composer-card] textarea", "entrySelector": "[data-dsh-dafeiyu-entry]" },
+  "storage": { "key": "dafeiyu.deskpet.v1", "schema": 1 }
+}

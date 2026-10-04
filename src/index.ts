@@ -20,6 +20,7 @@ import type {} from '@deepseek-ai/dsh-session-query'
 import { createDafeiyuService, createLlmReplyGateway, RULE_REPLY_GATEWAY } from './host/service.ts'
 import { createIdeasService } from './host/ideas.ts'
 import { createSessionTipService } from './host/session-tip.ts'
+import { createDeskpetService } from './host/deskpet.ts'
 import { makeRoutes } from './host/routes.ts'
 
 export const name = '@dsh-external/dsh-dafeiyu-chan'
@@ -54,13 +55,14 @@ export const DAFEIYU_GUIDANCE = '本机已安装 dsh-dafeiyu-chan 插件（大�
  */
 export function apply(ctx: Context, config?: Config): void {
   const gateway = config?.replyChannel === 'llm' ? createLlmReplyGateway(ctx) : RULE_REPLY_GATEWAY
-  const service = createDafeiyuService(ctx, gateway)
-  // 点子服务独立于 chat route：读工作区 + 草稿 + 新项目检测（只读，绝不写）。
-  // 走 LLM 时复用 persona 调用，失败自动回退规则文案。
-  const ideasService = createIdeasService(ctx)
-  // 新建会话护航提示：按工作区查旧会话（标题+摘要）→ 有则 LLM 建议，无则注意事项（只读）。
-  const sessionTipService = createSessionTipService(ctx)
-  const routes = makeRoutes({ service, ideasService, sessionTipService })
+  const services = {
+    service: createDafeiyuService(ctx, gateway),
+    ideasService: createIdeasService(ctx),
+    sessionTipService: createSessionTipService(ctx),
+    // 桌宠后端：记忆快照 + 开关持久化（client 端 deskpet 专用）。
+    deskpet: createDeskpetService(),
+  }
+  const routes = makeRoutes(services)
 
   let disposeRoutes: (() => void) | undefined
   let disposeSection: (() => void) | undefined

@@ -78,6 +78,8 @@ export interface ReplySticker {
 /** The result of one chat turn: the whale's reply + the updated memory. */
 export interface ChatReply {
     text: string;
+    /** AI-generated fictional persona line; never model chain-of-thought. */
+    thought?: string;
     memory: WhaleMemory;
     /** A locally-picked sticker matching the turn's mood (zero-token, optional). */
     sticker?: ReplySticker;

@@ -7,7 +7,7 @@
  *
  * Design (user-confirmed): fires on EVERY new-session click (no rate limit —
  * 下载该插件的都是需要陪伴的用户), reads real session summaries, and the tip
- * shows inside the 大肥鱼 panel.
+ * is rendered by the 大肥鱼 deskpet bubble.
  * @module dsh-dafeiyu/host/session-tip
  */
 
@@ -15,13 +15,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { extractSessionEventText } from '@deepseek-ai/dsh-session-query'
 import { WHALE_SYSTEM_PROMPT } from '../core/persona.ts'
-import type { ReplySticker } from '../core/types.ts'
-import { loadMemory } from './memory.ts'
-import { moodOf, pickStickerForTone, recentStickerList, rememberSticker } from './stickers.ts'
 
 /** The runtime shape the /new-session-tip route binds to. */
 export interface SessionTipService {
-  tip(): Promise<{ hasSessions: boolean; text: string; sessions: string[]; sticker?: ReplySticker }>
+  tip(): Promise<{ hasSessions: boolean; text: string; sessions: string[] }>
 }
 
 /** Minimal ctx surface we need (typed defensively like the other services). */
@@ -62,20 +59,6 @@ export function createSessionTipService(ctx: unknown): SessionTipService {
 
   return {
     async tip() {
-      // 提示也带一张表情（按记忆心情的「开心/元气/满足」池挑，零 token；
-      // 排除最近用过的防连发；无表情库则不带）
-      let sticker: ReplySticker | undefined
-      try {
-        const memory = await loadMemory()
-        const picked = await pickStickerForTone('happy', memory.mood, undefined, recentStickerList())
-        if (picked !== null) {
-          sticker = { file: picked.file, mood: moodOf(picked.file) }
-          rememberSticker(picked.file)
-        }
-      } catch {
-        /* 无表情库/记忆不可读 → 不带表情，不影响提示 */
-      }
-
       // 1. Find sessions belonging to this workspace (by header.cwd).
       let sessions: Array<{ id: string; cwd?: string }> = []
       try {
@@ -92,7 +75,6 @@ export function createSessionTipService(ctx: unknown): SessionTipService {
           hasSessions: false,
           text: `诶，杂鱼，这是你在「${baseName(workspacePath)}」这儿第一次开张吧？本鱼给你念叨几句新任务注意事项：\n${NEW_TASK_NOTES.map((n, i) => `${i + 1}. ${n}`).join('\n')}`,
           sessions: [],
-          sticker,
         }
       }
 
@@ -119,13 +101,12 @@ export function createSessionTipService(ctx: unknown): SessionTipService {
       // 3. Ask the LLM (persona) for a suggestion grounded in those sessions.
       const llmText = await callLlm(c, buildPrompt(workspacePath, titles, extracts))
       if (llmText !== null) {
-        return { hasSessions: true, text: llmText, sessions: titles, sticker }
+        return { hasSessions: true, text: llmText, sessions: titles }
       }
       return {
         hasSessions: true,
         text: `杂鱼，这个地盘你之前来过啦~ 本鱼翻了翻旧账：${titles.length > 0 ? titles.join('、') : '有几个旧会话'}。\n${HAS_SESSIONS_NOTES.join('\n')}`,
         sessions: titles,
-        sticker,
       }
     },
   }

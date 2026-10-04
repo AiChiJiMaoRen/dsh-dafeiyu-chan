@@ -1,13 +1,14 @@
 {
   "name": "@dsh-external/dsh-dafeiyu-chan",
-  "version": "0.0.1",
-  "description": "大肥鱼（鲸鱼娘）dsh 情绪价值陪伴看板娘：左侧栏最底部「大肥鱼」鱼标 + dsh 风聊天对话框，俏皮护短人设，记住你的心情（固定称呼「杂鱼」）。",
+  "version": "0.1.0",
+  "description": "大肥鱼（鲸鱼娘）dsh 情绪价值陪伴看板娘：左侧栏鱼标 + 输入框上沿桌宠气泡会话，俏皮护短人设，记住你的心情（固定称呼「杂鱼」）。",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
   "files": [
     "lib",
     "src",
+    "assets",
     "cordis.patch.yml",
     "NOTICE",
     "README.md"
@@ -64,7 +65,8 @@
   "scripts": {
     "build": "bash scripts/build.sh",
     "build:client": "tsdown",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:deskpet": "node scripts/check-deskpet-copy.mjs"
   },
   "license": "CC-BY-NC-SA-4.0"
 }

@@ -7,18 +7,16 @@
  *
  * Design (user-confirmed): fires on EVERY new-session click (no rate limit —
  * 下载该插件的都是需要陪伴的用户), reads real session summaries, and the tip
- * shows inside the 大肥鱼 panel.
+ * is rendered by the 大肥鱼 deskpet bubble.
  * @module dsh-dafeiyu/host/session-tip
  */
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';
-import type { ReplySticker } from '../core/types.ts';
 /** The runtime shape the /new-session-tip route binds to. */
 export interface SessionTipService {
     tip(): Promise<{
         hasSessions: boolean;
         text: string;
         sessions: string[];
-        sticker?: ReplySticker;
     }>;
 }
 /**

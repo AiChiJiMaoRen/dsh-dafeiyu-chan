@@ -1,0 +1,21 @@
+{
+  "id": "dsh-dafeiyu-chan",
+  "name": "大肥鱼",
+  "type": "bundle",
+  "repo": "AiChiJiMaoRen/dsh-dafeiyu-chan",
+  "spec": "github:AiChiJiMaoRen/dsh-dafeiyu-chan#v0.1.0",
+  "version": "v0.1.0",
+  "author": {
+    "name": "AiChiJiMaoRen",
+    "url": "https://github.com/AiChiJiMaoRen"
+  },
+  "description": "鲸鱼娘陪伴看板娘：九分娇一分傲人设，桌宠气泡会话 + 记忆 + 点子 + 新建会话护航",
+  "longDescription": "DeepSeek Harness 里的情绪价值陪伴看板娘。左侧栏「大肥鱼」鱼标，桌宠可在设置中选择显示在 dsh 主输入框或左侧栏 dock 输入框上沿。\n\n- 气泡会话：使用 dsh 主输入框或左侧栏 dock 输入框，桌宠气泡先显示伪思维，再显示正常回复正文\n- 俏皮陪聊：九分娇一分傲日常系人设，称呼你为「杂鱼」\n- 记忆：每次对话自动凝练进展/待办摘要\n- 给点子：读工作区 + 草稿笔记，给 1~3 条具体建议（只读）\n- 新建会话护航：点「新建会话」时给接续建议/新任务注意事项\n- 表情包：当前暂停\n\n伪思维仅为角色化 UI 文案，不展示模型真实推理。\n\n形象版权：上善（原作）/ ZipZipPipe（女仆二设），CC BY-NC-SA 4.0 非商用",
+  "tags": ["companion", "chat", "fun", "memory"],
+  "category": "fun",
+  "license": "CC-BY-NC-SA-4.0",
+  "source": "curated",
+  "install": {
+    "method": "dsh-plugin-add"
+  }
+}

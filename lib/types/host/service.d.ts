@@ -23,16 +23,16 @@ export interface DafeiyuServiceDeps {
 /** The runtime shape the route handlers bind to. */
 export interface DafeiyuService {
     bootstrap(): Promise<ChatBootstrap>;
+    memory(): Promise<WhaleMemory>;
     chat(text: string): Promise<ChatReply>;
     bubble(): Promise<{
         text: string;
     } | null>;
 }
-/** One gateway reply: the text plus an optional LLM-chosen sticker filename. */
+/** One gateway reply. Sticker selection is intentionally paused. */
 export interface GatewayReply {
     text: string;
-    /** Sticker filename chosen by the LLM (optional; caller falls back when absent). */
-    stickerFile?: string;
+    thought?: string;
 }
 /** Functions the chat route calls to produce a reply — swappable by channel. */
 export interface ReplyGateway {
@@ -69,7 +69,8 @@ export declare function createLlmReplyGateway(ctx: Context): ReplyGateway;
  * @returns the service object for the route handlers.
  */
 export declare function createDafeiyuService(ctx: Context, gateway?: ReplyGateway): {
-    /** The full bootstrap the panel shows on open. Greeting is generated fresh each open. */
+    memory(): Promise<WhaleMemory>;
+    /** Greeting payload retained for the sidebar entry bubble. */
     bootstrap(): Promise<ChatBootstrap>;
     /** One chat turn: update memory, call the gateway, distill memory, persist, return. */
     chat(text: string): Promise<ChatReply>;

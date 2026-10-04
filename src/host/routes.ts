@@ -14,6 +14,7 @@ import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import type { DafeiyuService } from './service.ts'
 import { makeIdeasRoutes, type IdeasService } from './ideas.ts'
 import { makeSessionTipRoutes, type SessionTipService } from './session-tip.ts'
+import { makeDeskpetRoutes, type DeskpetService } from './deskpet.ts'
 import { stickersDir } from './stickers.ts'
 
 export type { ReplyGateway } from './service.ts'
@@ -81,18 +82,25 @@ export interface DafeiyuSessionTipDeps {
   sessionTipService: SessionTipService
 }
 
+/** Deps for the `/deskpet` routes. */
+export interface DafeiyuDeskpetDeps {
+  deskpet: DeskpetService
+}
+
 /**
  * Build every /api/dsh-dafeiyu route.
  * @param deps - the services created in apply.
  * @returns the exact routes.
  */
-export function makeRoutes(deps: DafeiyuRoutesDeps & DafeiyuIdeasDeps & DafeiyuSessionTipDeps): WebRoute[] {
-  const { service, ideasService, sessionTipService } = deps
+export function makeRoutes(deps: DafeiyuRoutesDeps & DafeiyuIdeasDeps & DafeiyuSessionTipDeps & DafeiyuDeskpetDeps): WebRoute[] {
+  const { service, ideasService, sessionTipService, deskpet } = deps
   if (!ideasService) throw new Error('ideasService is required for routes')
   if (!sessionTipService) throw new Error('sessionTipService is required for routes')
+  if (!deskpet) throw new Error('deskpet is required for routes')
   return [
     ...makeIdeasRoutes({ service: ideasService }),
     ...makeSessionTipRoutes({ service: sessionTipService }),
+    ...makeDeskpetRoutes({ service: deskpet }),
     {
       kind: 'exact',
       path: `${API_PREFIX}/bootstrap`,
@@ -110,6 +118,22 @@ export function makeRoutes(deps: DafeiyuRoutesDeps & DafeiyuIdeasDeps & DafeiyuS
       },
     },
     {
+      kind: 'exact',
+      path: `${API_PREFIX}/memory`,
+      handler: async (req, res) => {
+        if (!isLoopbackRequest(req) || req.method !== 'GET') {
+          writeJson(res, 403, { ok: false, error: { code: 'internal', message: 'forbidden' } })
+          return
+        }
+        try {
+          // 形状：value.memory（client 端解析 payload.value.memory）。
+          // 全量 WhaleMemory 返回，deskpet 只消费 progressLog/currentFocus/mood 子集。
+          writeJson(res, 200, { ok: true, value: { memory: await service.memory() } })
+        } catch (error) {
+          writeJson(res, 500, { ok: false, error: { code: 'memory-unreadable', message: error instanceof Error ? error.message : String(error) } })
+        }
+      },
+    },    {
       kind: 'exact',
       path: `${API_PREFIX}/chat`,
       handler: async (req, res) => {
